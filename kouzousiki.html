@@ -116,11 +116,58 @@ window.addEventListener("DOMContentLoaded", () => {
 const explosionSound = new Audio(
   "https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/explosion-sound.mp3"
 );
+explosionSound.volume = 1.0; // ★最大音量
+const fireSound = new Audio(
+  "https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/fire-sound.mp3"
+);
+
+const ngSound = new Audio(
+  "https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/hazure.wav"
+);
+ngSound.volume = 1.0;
+
 // ===== 問題 =====
 const rawData = `
 ベンゼン,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/benzene.png
+シクロヘキサン,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/cyclohexane.png
+1,2,3,4,5,6-ヘキサクロロシクロヘキサン,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/hexachloridebenzene.png
 トルエン,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/toluene.png
+o-キシレン,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/o-xylene.png
+m-キシレン,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/m-xylene.png
+p-キシレン,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/p-xylene.png
+スチレン,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/styrene.png
+ナフタレン,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/naphthalene1.png
+エチルベンゼン,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/ethylbenzene.png
+ベンジルアルコール,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/benzylalcohol.png
+ベンズアルデヒド,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/benzaldehyde.png
+安息香酸,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/benzoicAcid.png
+ベンゼンスルホン酸,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/benzenesulfonicAcid.png
+ベンゼンスルホン酸ナトリウム,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/SodiumBenzenesulfonate.png
+ナトリウムフェノキシド,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/sodiumPhenoxide.png
+フェノール,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/phenol.png
 クロロベンゼン,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/chlorobenzene.png
+クメン,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/cumene.png
+クメンヒドロペルオキシド,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/cumenehydroperoxide.png
+アセトン,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/acetone.png
+ニトロベンセン,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/nitrobenzene.png
+アニリン塩酸塩,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/AniliniumChloride.png
+アニリン,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/aniline.png
+塩化ベンゼンジアゾニウム,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/benzenediazoniumChloride.png
+無水酢酸,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/aceticAnhydride.png
+アセトアニリド,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/acetanilide.png
+p-ヒドロキシアゾベンゼン,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/p-hydroxyazobenzene.png
+サリチル酸,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/salicylicAcid.png
+サリチル酸ナトリウム,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/sodiumSalicylate.png
+アセチルサリチル酸,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/acethylsalicylicAcid.png
+サリチル酸メチル,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/methylSalicylate.png
+2,4,6-トリブロモフェノール,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/2,4,6-tribromophenol.png
+2,4,6-トリニトロフェノール,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/TNT.png
+ブロモベンセン,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/bromobenzene.png
+フタル酸,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/phthalicAcid.png
+イソフタル酸,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/isophthalicAcid.png
+無水フタル酸,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/phthalicAnhydride.png
+テレフタル酸,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/terephthalicAcid.png
+ポリエチレンテレフタラート,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/PET.png
 `;
 
 const problems = rawData.trim().split("\n").map(l=>{
@@ -129,7 +176,7 @@ const problems = rawData.trim().split("\n").map(l=>{
 });
 
 // ===== 問題数 =====
-let total = parseInt(prompt("何問出題？","3"),10);
+let total = parseInt(prompt("何問解きますか？max40問","3"),10);
 if(isNaN(total)||total<=0) total=3;
 total = Math.min(total, problems.length);
 
@@ -147,9 +194,36 @@ let index = 0;
 
 // ===== 辞書 =====
 const map = {
-  "く":["クメン","クレゾール","クロロ"],
-  "べ":["ベンジル","ベンズ","ベンゼン"],
-  "と":["トリ","トルエン"]
+"1":["1-","1,2,3,4,5,6-"],
+"2":["2-","2,4,6-"],
+"m":["m-"],
+"o":["o-"],
+"p":["p-"],
+"あ":["アセチル","アセト","アゾ","アニリド","アニリン","アルコール","アルデヒド","安息香酸"],
+"い":["イソ","イオン"],
+"え":["エチル","エチレン","塩化","塩酸","塩酸塩"],
+"お":["オキシド"],
+"き":["キシレン"],
+"く":["クメン","クレゾール","クロロ"],
+"さ":["酢酸","サリチル酸"],
+"し":["ジ","シクロ"],
+"じ":["ジ"],
+"す":["スチレン","スルホン酸"],
+"て":["テレ"],
+"と":["トリ","トルエン"],
+"な":["ナトリウム","ナフタレン","ナフトール"],
+"に":["ニウム","ニトロ"],
+"ひ":["ヒドロ","ヒドロキシ"],
+"ふ":["フェノール","フェノキシド","フタラート","フタル酸","フマル酸","ブロモ"],
+"ぶ":["ブロモ"],
+"へ":["ヘキサ","ヘキサン","ペル","ベンジル","ベンズ","ベンゼン"],
+"べ":["ベンジル","ベンズ","ベンゼン"],
+"ぺ":["ペル"],
+"ほ":["ポリ"],
+"ぽ":["ポリ"],
+"ま":["マレイン酸"],
+"む":["無水"],
+"め":["メチル"]
 };
 
 // ===== 状態 =====
@@ -292,6 +366,9 @@ function fire(){
   const text=parts.join("");
   if(!text) return;
 
+  fireSound.currentTime = 0;
+  fireSound.play().catch(()=>{});
+
   const s=document.createElement("div");
   s.className="shot";
   s.textContent=text;
@@ -366,6 +443,8 @@ function update(){
          sr.left < er.right && sr.right > er.left){
 
         if(s.text === enemy.ans){
+
+          // 正解処理
           score += 5 - fall;
           scoreDiv.textContent = score;
 
@@ -378,10 +457,16 @@ function update(){
 
           index++;
           fall = 0;
-          
           speed = baseSpeed;
-          
+
           setTimeout(spawn, 500);
+
+        }else{
+
+          // ★不正解音
+          ngSound.currentTime = 0;
+          ngSound.play().catch(()=>{});
+
         }
 
         s.el.remove();
