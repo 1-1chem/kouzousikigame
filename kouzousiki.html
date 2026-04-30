@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>構造式ゲーム</title>
+
+<style>
+body {
+  font-family: sans-serif;
+}
+
+/* 横並び */
+#container {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+}
+
+/* 左UI */
+#leftPanel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 180px;
+}
+
+/* ゲーム */
+#game {
+  width: 320px;
+  height: 420px;
+  border: 2px solid black;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 落下エリア */
+#playArea {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}
+
+/* 弾表示 */
+#result {
+  height: 40px;
+  border-top: 2px solid black;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  background: #f0f0f0;
+  font-size: 20px;
+  letter-spacing: 2px;
+}
+
+/* 敵 */
+.enemy {
+  position: absolute;
+  left: 120px;
+}
+.enemy img {
+  width: 80px;
+}
+
+/* 弾 */
+.shot {
+  position: absolute;
+  background: white;
+  padding: 4px 6px;
+  border-radius: 4px;
+  font-weight: bold;
+}
+
+/* 破片 */
+.piece {
+  position: absolute;
+  pointer-events: none;
+}
+
+/* 候補 */
+#candidates button {
+  margin: 2px;
+}
+</style>
+</head>
+
+<body>
+
+<div id="container">
+
+  <!-- 左 -->
+  <div id="leftPanel">
+    <input id="input" maxlength="1">
+
+    <div id="candidates"></div>
+
+    <div>入力文字:</div>
+  
+
+    <button id="submit">発射</button>
+
+    <div>スコア: <span id="score">0</span></div>
+  </div>
+
+  <!-- 右 -->
+  <div id="game">
+    <div id="playArea"></div>
+    <div id="result"></div>
+  </div>
+
+</div>
+
+<script>
+window.addEventListener("DOMContentLoaded", () => {
+//効果音
+const explosionSound = new Audio(
+  "https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/explosion-sound.mp3"
+);
+// ===== 問題 =====
+const rawData = `
+ベンゼン,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/benzene.png
+トルエン,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/toluene.png
+クロロベンゼン,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/chlorobenzene.png
+`;
+
+const problems = rawData.trim().split("\n").map(l=>{
+  const [name,image]=l.split(",");
+  return {name,image};
+});
+
+// ===== 問題数 =====
+let total = parseInt(prompt("何問出題？","3"),10);
+if(isNaN(total)||total<=0) total=3;
+total = Math.min(total, problems.length);
+
+// ===== シャッフル =====
+function shuffle(a){
+  for(let i=a.length-1;i>0;i--){
+    let j=Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+
+let queue = shuffle([...problems]).slice(0,total);
+let index = 0;
+
+// ===== 辞書 =====
+const map = {
+  "く":["クメン","クレゾール","クロロ"],
+  "べ":["ベンジル","ベンズ","ベンゼン"],
+  "と":["トリ","トルエン"]
+};
+
+// ===== 状態 =====
+let enemy=null;
+let y=0;
+let fall=0;
+let score=0;
+let parts=[];
+let shots=[];
+
+let dir = 1;        // 1=右, -1=左
+
+// 横移動速度
+let baseSpeed = 1.2;
+let speed = baseSpeed;
+
+let speedUp = 0.3; // 1段落ちるごとの加速量
+let stepDown = 30;  // 1段下がる量
+let maxY = 320;     // 最下ライン
+
+
+// ===== 要素 =====
+const game = document.getElementById("playArea");
+const input = document.getElementById("input");
+const cand = document.getElementById("candidates");
+const result = document.getElementById("result");
+const scoreDiv = document.getElementById("score");
+
+// ===== フォーカス固定 =====
+input.focus();
+input.addEventListener("blur", () => {
+  setTimeout(() => input.focus(), 0);
+});
+
+// ===== 敵生成 =====
+function spawn(){
+
+  if(index >= queue.length){
+    alert("終了！スコア:"+score);
+    location.reload();
+    return;
+  }
+
+  const p = queue[index];
+
+  const div = document.createElement("div");
+  div.className = "enemy";
+
+  const img = document.createElement("img");
+  img.src = p.image;
+
+  div.appendChild(img);
+  game.appendChild(div);
+
+  enemy = {
+    el: div,
+    img: img,
+    ans: p.name
+  };
+
+  // ★初期位置はここでOK
+  y = 0;
+  enemy.el.style.top = "0px";
+  enemy.el.style.left = "120px";
+}
+
+// ===== 爆発 =====
+function explode(e){
+  const r=e.img.getBoundingClientRect();
+  const gr=game.getBoundingClientRect();
+  const w=r.width,h=r.height;
+
+  for(let i=0;i<6;i++){
+    for(let j=0;j<6;j++){
+
+      const d=document.createElement("div");
+      d.className="piece";
+
+      let pw=w/6,ph=h/6;
+
+      d.style.width=pw+"px";
+      d.style.height=ph+"px";
+      d.style.backgroundImage=`url(${e.img.src})`;
+      d.style.backgroundSize=`${w}px ${h}px`;
+      d.style.backgroundPosition=`-${i*pw}px -${j*ph}px`;
+
+      let x=r.left-gr.left+i*pw;
+      let y=r.top-gr.top+j*ph;
+
+      d.style.left=x+"px";
+      d.style.top=y+"px";
+
+      game.appendChild(d);
+
+      let vx=(Math.random()-0.5)*6;
+      let vy=(Math.random()-0.5)*6;
+
+      function mv(){
+        x+=vx; y+=vy; vy+=0.2;
+        d.style.left=x+"px";
+        d.style.top=y+"px";
+        if(y<500) requestAnimationFrame(mv);
+        else d.remove();
+      }
+      mv();
+    }
+  }
+}
+
+// ===== 入力 =====
+input.addEventListener("input",()=>{
+  const k=input.value.trim()[0];
+  if(!k) return;
+
+  cand.innerHTML="";
+  (map[k]||[]).forEach(w=>{
+    const b=document.createElement("button");
+    b.textContent=w;
+    b.onclick=()=>{
+      parts.push(w);
+      input.value="";
+      result.textContent=parts.join("");
+        // ★候補を消す
+        cand.innerHTML = "";
+      input.focus();
+    };
+    cand.appendChild(b);
+  });
+});
+
+// ===== Enterで発射 =====
+input.addEventListener("keydown", (e)=>{
+  if(e.key==="Enter"){
+    fire();
+  }
+});
+
+// ===== 発射 =====
+function fire(){
+  const text=parts.join("");
+  if(!text) return;
+
+  const s=document.createElement("div");
+  s.className="shot";
+  s.textContent=text;
+
+  let sx=140, sy=380;
+  s.style.left=sx+"px";
+  s.style.top=sy+"px";
+
+  game.appendChild(s);
+
+  shots.push({el:s,x:sx,y:sy,text:text});
+
+  parts=[];
+  result.textContent="";
+  input.focus();
+}
+
+document.getElementById("submit").onclick=fire;
+
+// ===== 更新 =====
+function update(){
+
+  if(enemy){
+
+  let x = enemy.el.offsetLeft;
+  x += dir * speed;
+  enemy.el.style.left = x + "px";
+
+  if(x <= 0){
+    dir = 1;
+    y += stepDown;
+    speed += speedUp;
+  }
+
+  if(x >= 240){
+    dir = -1;
+    y += stepDown;
+    speed += speedUp;
+  }
+
+  enemy.el.style.top = y + "px";
+
+  // ★ここが新しい判定
+  const areaRect = game.getBoundingClientRect();
+  const enemyRect = enemy.el.getBoundingClientRect();
+
+  if(enemyRect.bottom >= areaRect.bottom){
+
+    fall++;
+    enemy.el.remove();
+    enemy = null;
+
+    index++;
+    fall = 0;
+
+    speed = baseSpeed; // ←リセット（重要）
+
+    spawn();
+  }
+}
+
+  // ミサイル処理はそのまま
+  shots.forEach((s,i)=>{
+    s.y -= 4;
+    s.el.style.top = s.y + "px";
+
+    if(enemy){
+      const er = enemy.el.getBoundingClientRect();
+      const sr = s.el.getBoundingClientRect();
+
+      if(sr.top < er.bottom && sr.bottom > er.top &&
+         sr.left < er.right && sr.right > er.left){
+
+        if(s.text === enemy.ans){
+          score += 5 - fall;
+          scoreDiv.textContent = score;
+
+          explosionSound.currentTime = 0;
+          explosionSound.play();
+
+          explode(enemy);
+          enemy.el.remove();
+          enemy = null;
+
+          index++;
+          fall = 0;
+          
+          speed = baseSpeed;
+          
+          setTimeout(spawn, 500);
+        }
+
+        s.el.remove();
+        shots.splice(i,1);
+      }
+    }
+
+    if(s.y < 0){
+      s.el.remove();
+      shots.splice(i,1);
+    }
+  });
+
+  requestAnimationFrame(update);
+}
+
+// ===== 開始 =====
+spawn();
+update();
+
+});
+</script>
+
+</body>
+</html>
