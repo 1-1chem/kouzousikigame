@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+
 <meta charset="UTF-8">
 <title>構造式ゲーム</title>
 
@@ -44,18 +47,34 @@ body {
 }
 
 /* ゲーム */
-#game {
+/*#game {
   width: 320px;
   height: 420px;
   border: 2px solid black;
   display: flex;
   flex-direction: column;
   position:relative;
+}*/
+
+#game {
+  width: 100%;
+  max-width: 480px; /* スマホ最大幅 */
+  height: 60vh;        /* ← 画面の高さ全部を使う */
+  margin: 0 auto;
+  position: relative;
+  overflow: hidden;
+  border: 2px solid black;
+  display: flex;
+  flex-direction: column;
+
+
 }
 
+
+
 #input {
-  width: 20px;
-  height: 20px;
+  width: 30px;
+  height: 30px;
 }
 
 #submit {
@@ -118,8 +137,13 @@ body {
 }
 
 /* 候補 */
-#candidates button {
-  margin: 2px;
+#candidates button{
+  margin: 4px;
+  padding: 10px 16px;
+  font-size: 24px;
+  font-weight: bold;
+  border-radius: 10px;
+  cursor: pointer;
 }
 
 #resultLabel{
@@ -386,11 +410,7 @@ return { answers, image, scale };
 });
 
 // ===== 問題数 =====
-//let total = parseInt(prompt("何問解きますか？max40問","3"),10);//ユーザーに解く問題数を尋ねる
-//if(isNaN(total)||total<=0) total=3;//ユーザーの入力が不正な場合は3問にする
-total = 40 //Math.min(total, problems.length);//ユーザーの入力が問題数より多い場合は問題数にする
-
-
+total = 40
 
 // ===== シャッフル =====
 function shuffle(a){
@@ -401,13 +421,13 @@ function shuffle(a){
   return a;
 }
 
-//let queue = shuffle([...problems]).slice(0,total);//シャッフルしてtotal問だけ抜き取る
 let queue = problems.slice(0,total);
 let index = 0;//現在の問題のインデックス
 let correctCount = 0;   // 正解数
 let wrongCount = 0;     // 不正解数
 let wrongList = [];
 let tutorial = true;
+let gameRunning = false;
 
 // ===== 辞書 =====
 const map = {
@@ -546,7 +566,9 @@ function spawn(){                   //敵を生成する関数
   div.className = "enemy";//敵のクラスを設定
   const img = document.createElement("img");//敵の画像を作成
   img.src = p.image;//敵の画像のURLを設定
-  const scale = p.scale || 0.4;//画像の倍率を設定（データにない場合は0.4）
+  const baseScale = p.scale || 0.4;
+  const scale = window.innerWidth < 480 ? baseScale * 0.7 : baseScale;
+  
   img.style.transform = `scale(${scale})`;//画像の拡大率を設定
   img.style.transformOrigin = "center";// 
   div.appendChild(img);//敵のdivに画像を追加
