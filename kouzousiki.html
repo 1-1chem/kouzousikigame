@@ -9,6 +9,25 @@ body {
   font-family: sans-serif;
 }
 
+#startScreen {
+  position: fixed;
+  top:0; left:0;
+  width:100%;
+  height:100%;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  background:#fff;
+}
+
+.speedBtn {
+  margin:10px;
+  padding:10px 20px;
+  font-size:18px;
+  cursor:pointer;
+}
+
 /* 横並び */
 #container {
   display: flex;
@@ -31,6 +50,18 @@ body {
   border: 2px solid black;
   display: flex;
   flex-direction: column;
+  position:relative;
+}
+
+#input {
+  width: 20px;
+  height: 20px;
+}
+
+#submit {
+  height: 40px;        /* 縦サイズ */
+  font-size: 20px;     /* 文字も大きく */
+  /* 内側の余白 */
 }
 
 /* 落下エリア */
@@ -41,25 +72,34 @@ body {
 }
 
 /* 弾表示 */
-#result {
-  height: 40px;
-  border-top: 2px solid black;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: bold;
-  background: #f0f0f0;
-  font-size: 20px;
-  letter-spacing: 2px;
+#result{
+  display:none;
+
+  min-width:120px;
+  height:32px;
+
+  border:2px solid black;
+  background:#f0f0f0;
+
+  align-items:center;
+  justify-content:center;   /* ★追加 */
+
+  padding:0 10px;
+
+  font-size:20px;
+  font-weight:bold;
 }
 
 /* 敵 */
 .enemy {
   position: absolute;
-  left: 120px;
+  left: 0;
+  
 }
+
 .enemy img {
-  width: 80px;
+  transform: scale(0.4);
+  transform-origin: top left;
 }
 
 /* 弾 */
@@ -81,104 +121,276 @@ body {
 #candidates button {
   margin: 2px;
 }
+
+#resultLabel{
+  display:none;
+}
+
+#endScreen {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;          /* ★これ重要 */
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;  /* ← center → flex-start に変更 */
+  overflow-y: auto;
+  padding-top: 40px; 
+  z-index: 9999;
+  overflow: hidden;       /* ← 全体は固定 */
+}
+
+#endScreen h2 {
+  margin: 10px 0 5px 0;   /* 下を小さく */
+}
+
+#finalScore {
+  font-size: 60px;
+  font-weight: bold;
+  color: #ff6600;
+  text-shadow: 2px 2px 0 #000;
+  margin: 0 0 10px 0;     /* 上の余白をなくす */
+}
+#retryBtn {
+  flex-shrink: 0;
+   margin: 0 0 30px 0; 
+}
+
+#scorePanel {
+  position: absolute;
+  right: 20px;
+  top: 20px;
+
+  font-size: 28px;
+  font-weight: bold;
+}
+
+#score {
+  font-size: 48px;
+  color: red;
+}
+
+#levelUpText{
+  font-size:40px;
+  font-weight:bold;
+  color:red;
+  margin:20px;
+}
+
+#message{
+  background:black;
+  color:lime;
+
+  padding:8px;
+  border:2px solid lime;
+
+  font-size:18px;
+  font-weight:bold;
+
+  display:none;
+
+  margin-top:8px;
+  text-align:center;
+}
+
+#nextStageBtn,
+#retryStageBtn{
+  font-size: 48px;
+  padding: 25px 60px;
+  background: linear-gradient(#ffcc00,#ff8800);
+
+  color: white;
+
+  border: 4px solid #fff;
+
+  border-radius: 20px;
+
+  font-weight: bold;
+
+  text-shadow: 2px 2px 4px black;
+
+  box-shadow: 0 0 20px orange;
+
+  cursor: pointer;
+
+  display:block;
+  margin:40px auto;
+}
+
+#nextStageBtn:hover,
+#retryStageBtn:hover{
+  transform: scale(1.05);
+}
+
 </style>
 </head>
 
 <body>
 
-<div id="container">
+<!-- ★開始画面 -->
+<div id="startScreen" style="text-align:center;">
 
+  <h2>構造式ゲーム</h2>
+
+  <div id="description" style="margin:15px; font-size:20px; line-height:1.6;">
+    落ちてくる構造式の名前を入力して撃ち落とす！<br>
+    入力欄に1文字目を入れると候補が出る<br>
+    候補をクリックして，名前を完成させ，発射で攻撃！<br><br>
+  </div>
+
+  <h2>速度を選択</h2>
+
+  <button class="speedBtn" data-speed="1.2" data-point="2">低速</button>
+  <button class="speedBtn" data-speed="5.2" data-point="4">高速（得点2倍）</button>
+  <button class="speedBtn" data-speed="10.2" data-point="8">超高速（得点4倍）</button>
+
+</div>
+
+<!-- ★ゲーム画面（最初は非表示） -->
+<div id="gameScreen" style="display:none;">
+  <div id="container">
   <!-- 左 -->
   <div id="leftPanel">
     <input id="input" maxlength="1">
-
     <div id="candidates"></div>
-
-    <div>入力文字:</div>
-  
-
+    <div id="resultLabel">入力する文字列の候補:</div>
     <button id="submit">発射</button>
-
-    <div>スコア: <span id="score">0</span></div>
-  </div>
+      <div>スコア: <span id="score">0</span></div>
+  <div id="message"></div>  
+    </div>
 
   <!-- 右 -->
   <div id="game">
     <div id="playArea"></div>
     <div id="result"></div>
   </div>
-
+  </div>
 </div>
+
+
+
+<!-- エンドスクリーン -->
+<div id="endScreen" style="
+  display:none;
+  position:fixed;
+  top:0; left:0;
+  width:100%; height:100%;
+  background:#fff;
+  align-items:center;
+  justify-content:center;
+  flex-direction:column;
+  ">
+  <h2>結果</h2>
+  <h2 id="resultTitle"></h2>
+  <div id="finalScore"></div>
+  <div id="levelUpText"></div>
+  <div id="accuracyComment"></div>
+  <div id="scrollArea">
+    <div id="wrongAnswers"></div>
+  </div>
+  <div id="stageButtons">
+    <button id="nextStageBtn" style="display:none;">
+      次の問題へ
+    </button>
+    <button id="retryStageBtn" style="display:none;">
+      やり直し
+    </button>
+  </div>
+</div>
+
 
 <script>
 window.addEventListener("DOMContentLoaded", () => {
-//効果音
-const explosionSound = new Audio(
-  "https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/explosion-sound.mp3"
-);
-explosionSound.volume = 1.0; // ★最大音量
-const fireSound = new Audio(
-  "https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/fire-sound.mp3"
-);
+  
+  //効果音
+  const explosionSound = new Audio(
+    "https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/explosion-sound.mp3"
+  );
+  explosionSound.volume = 1.0; // ★最大音量
+  const fireSound = new Audio(
+    "https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/fire-sound.mp3"
+  );
+  const ngSound = new Audio(
+    "https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/hazure.wav"
+  );
+  ngSound.volume = 1.0;
 
-const ngSound = new Audio(
-  "https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/hazure.wav"
-);
-ngSound.volume = 1.0;
+  const levelUpSound = new Audio(
+    "https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/upLevel.mp3"
+  );
+  levelUpSound.volume = 1.0;
+  // ===== 落下中BGM =====
+  const fallSound = new Audio(
+    "https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/invader.mp3"
+  );
+  fallSound.loop = true;
+  fallSound.volume = 0.5;
 
 // ===== 問題 =====
 const rawData = `
-ベンゼン,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/benzene.png
-シクロヘキサン,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/cyclohexane.png
-1,2,3,4,5,6-ヘキサクロロシクロヘキサン,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/hexachloridebenzene.png
-トルエン,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/toluene.png
-o-キシレン,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/o-xylene.png
-m-キシレン,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/m-xylene.png
-p-キシレン,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/p-xylene.png
-スチレン,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/styrene.png
-ナフタレン,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/naphthalene1.png
-エチルベンゼン,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/ethylbenzene.png
-ベンジルアルコール,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/benzylalcohol.png
-ベンズアルデヒド,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/benzaldehyde.png
-安息香酸,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/benzoicAcid.png
-ベンゼンスルホン酸,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/benzenesulfonicAcid.png
-ベンゼンスルホン酸ナトリウム,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/SodiumBenzenesulfonate.png
-ナトリウムフェノキシド,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/sodiumPhenoxide.png
-フェノール,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/phenol.png
-クロロベンゼン,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/chlorobenzene.png
-クメン,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/cumene.png
-クメンヒドロペルオキシド,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/cumenehydroperoxide.png
-アセトン,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/acetone.png
-ニトロベンセン,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/nitrobenzene.png
-アニリン塩酸塩,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/AniliniumChloride.png
-アニリン,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/aniline.png
-塩化ベンゼンジアゾニウム,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/benzenediazoniumChloride.png
-無水酢酸,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/aceticAnhydride.png
-アセトアニリド,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/acetanilide.png
-p-ヒドロキシアゾベンゼン,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/p-hydroxyazobenzene.png
-サリチル酸,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/salicylicAcid.png
-サリチル酸ナトリウム,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/sodiumSalicylate.png
-アセチルサリチル酸,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/acethylsalicylicAcid.png
-サリチル酸メチル,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/methylSalicylate.png
-2,4,6-トリブロモフェノール,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/2,4,6-tribromophenol.png
-2,4,6-トリニトロフェノール,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/TNT.png
-ブロモベンセン,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/bromobenzene.png
-フタル酸,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/phthalicAcid.png
-イソフタル酸,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/isophthalicAcid.png
-無水フタル酸,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/phthalicAnhydride.png
-テレフタル酸,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/terephthalicAcid.png
-ポリエチレンテレフタラート,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/PET.png
+ベンゼン,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/benzene.png,0.4
+シクロヘキサン,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/cyclohexane.png,0.4
+トルエン|メチルベンゼン,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/toluene.png,0.4
+クロロベンゼン,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/chlorobenzene.png,0.4
+ブロモベンゼン,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/bromobenzene.png,0.4
+1,2-ジメチルベンゼン|o-キシレン,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/o-xylene.png,0.4
+エチルベンゼン,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/ethylbenzene.png,0.4
+スチレン,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/styrene.png,0.4
+1,3-ジメチルベンゼン|m-キシレン,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/m-xylene.png,0.4
+クメン,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/cumene.png,0.4
+ナフタレン,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/naphthalene1.png,0.4
+1,4-ジメチルベンゼン|p-キシレン,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/p-xylene.png,0.4
+ベンジルアルコール,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/benzylalcohol.png,0.4
+フェノール,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/phenol.png,0.4
+ベンズアルデヒド,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/benzaldehyde.png,0.4
+安息香酸,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/benzoicAcid.png,0.4
+フタル酸,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/phthalicAcid.png,0.4
+ベンゼンスルホン酸,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/benzenesulfonicAcid.png,0.4
+イソフタル酸,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/isophthalicAcid.png,0.4
+サリチル酸,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/salicylicAcid.png,0.4
+テレフタル酸,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/terephthalicAcid.png,0.4
+ベンゼンスルホン酸ナトリウム,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/SodiumBenzenesulfonate.png,0.4
+ナトリウムフェノキシド,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/sodiumPhenoxide.png,0.4
+アセトン,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/acetone.png,0.4
+ニトロベンゼン,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/nitrobenzene.png,0.4
+アニリン,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/aniline.png,0.4
+アニリン塩酸塩|塩酸アニリン,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/Aniliniumchloride.png,0.4
+アセトアニリド,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/acetanilide.png,0.4
+無水酢酸,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/aceticAnhydride.png,0.4
+サリチル酸ナトリウム,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/sodiumSalicylate.png,0.4
+アセチルサリチル酸,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/acethylsalicylicAcid.png,0.4
+サリチル酸メチル,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/methylSalicylate.png,0.4
+2,4,6-トリブロモフェノール,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/tribromophenol.png,0.4
+ピクリン酸|2,4,6-トリニトロフェノール,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/TNT.png,0.4
+無水フタル酸,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/phthalicAnhydride.png,0.4
+塩化ベンゼンジアゾニウム,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/benzenediazoniumChloride.png,0.4
+p-ヒドロキシアゾベンゼン,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/p-hydroxyazobenzene.png,0.4
+クメンヒドロペルオキシド,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/cumenehydroperoxide.png,0.4
+ポリエチレンテレフタラート,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/PET.png,0.3
+1,2,3,4,5,6-ヘキサクロロシクロヘキサン,https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/img/hexachloridebenzene.png,0.4
 `;
 
-const problems = rawData.trim().split("\n").map(l=>{
-  const [name,image]=l.split(",");
-  return {name,image};
+const problems = rawData.trim().split("\n").map(l => {
+  const lastComma = l.lastIndexOf(",");//最後のカンマの位置を取得
+  const secondLast = l.lastIndexOf(",", lastComma - 1);//最後から2番目のカンマの位置を取得
+  const namePart = l.slice(0, secondLast);//正解の候補を取得
+  const answers = namePart.split("|");//正解の候補を配列にする
+  const image = l.slice(secondLast + 1, lastComma);//構造式のurl
+  const scale = parseFloat(l.slice(lastComma + 1));//構造式を表示する倍率
+return { answers, image, scale };
+
 });
 
 // ===== 問題数 =====
-let total = parseInt(prompt("何問解きますか？max40問","3"),10);
-if(isNaN(total)||total<=0) total=3;
-total = Math.min(total, problems.length);
+//let total = parseInt(prompt("何問解きますか？max40問","3"),10);//ユーザーに解く問題数を尋ねる
+//if(isNaN(total)||total<=0) total=3;//ユーザーの入力が不正な場合は3問にする
+total = 40 //Math.min(total, problems.length);//ユーザーの入力が問題数より多い場合は問題数にする
+
+
 
 // ===== シャッフル =====
 function shuffle(a){
@@ -189,23 +401,28 @@ function shuffle(a){
   return a;
 }
 
-let queue = shuffle([...problems]).slice(0,total);
-let index = 0;
+//let queue = shuffle([...problems]).slice(0,total);//シャッフルしてtotal問だけ抜き取る
+let queue = problems.slice(0,total);
+let index = 0;//現在の問題のインデックス
+let correctCount = 0;   // 正解数
+let wrongCount = 0;     // 不正解数
+let wrongList = [];
+let tutorial = true;
 
 // ===== 辞書 =====
 const map = {
-"1":["1-","1,2,3,4,5,6-"],
+"1":["1-","1,2-","1,3-","1,4-","1,2,3,4,5,6-"],
 "2":["2-","2,4,6-"],
-"m":["m-"],
+"ｍ":["m-"],
 "o":["o-"],
-"p":["p-"],
-"あ":["アセチル","アセト","アゾ","アニリド","アニリン","アルコール","アルデヒド","安息香酸"],
+"ｐ":["p-"],
+"あ":["アセチル","アセト","アセトン","アゾ","アニリド","アニリン","アルコール","アルデヒド","安息香酸"],
 "い":["イソ","イオン"],
 "え":["エチル","エチレン","塩化","塩酸","塩酸塩"],
-"お":["オキシド"],
+"お":["オキシド","o-"],
 "き":["キシレン"],
 "く":["クメン","クレゾール","クロロ"],
-"さ":["酢酸","サリチル酸"],
+"さ":["酢酸","サリチル酸","酸"],
 "し":["ジ","シクロ"],
 "じ":["ジ"],
 "す":["スチレン","スルホン酸"],
@@ -213,7 +430,8 @@ const map = {
 "と":["トリ","トルエン"],
 "な":["ナトリウム","ナフタレン","ナフトール"],
 "に":["ニウム","ニトロ"],
-"ひ":["ヒドロ","ヒドロキシ"],
+"ひ":["ヒドロ","ヒドロキシ","ピクリン"],
+"ぴ":["ピクリン"],
 "ふ":["フェノール","フェノキシド","フタラート","フタル酸","フマル酸","ブロモ"],
 "ぶ":["ブロモ"],
 "へ":["ヘキサ","ヘキサン","ペル","ベンジル","ベンズ","ベンゼン"],
@@ -227,101 +445,160 @@ const map = {
 };
 
 // ===== 状態 =====
-let enemy=null;
-let y=0;
-let fall=0;
-let score=0;
-let parts=[];
-let shots=[];
+let enemy=null;   // 現在の敵
+let x=0;          // 現在の敵のx座標
+let y=-200;       // 現在の敵のy座標
+let fall=0;       // 落ちた回数
+let score=0;      // スコア
+let parts=[];     // 現在入力している文字の配列
+let shots=[];     // 発射されている弾の配列
+let dir = 1;      // 1=右, -1=左
+let hit = false;  // 当たったかどうか
+let soundStarted = false;
+let state = "right"; // right / left / down
+let stepCount = 0;   // 何段落ちたか
+let currentAnswer = "";
+let stageSize = 5;        // 1ステージ5問
+let stageStart = 0;       // 現在ステージ開始位置
+let stageCorrect = 0;     // ステージ正解数
+let stageScore = 0;       // ステージ得点
+let level = 1;
 
-let dir = 1;        // 1=右, -1=左
 
-// 横移動速度
-let baseSpeed = 1.2;
-let speed = baseSpeed;
-
-let speedUp = 0.3; // 1段落ちるごとの加速量
-let stepDown = 30;  // 1段下がる量
-let maxY = 320;     // 最下ライン
+const MAX_STEP = 7;  // 7段で終了
 
 
-// ===== 要素 =====
-const game = document.getElementById("playArea");
-const input = document.getElementById("input");
-const cand = document.getElementById("candidates");
-const result = document.getElementById("result");
-const scoreDiv = document.getElementById("score");
+const startScreen = document.getElementById("startScreen");
+const gameScreen = document.getElementById("gameScreen");
+const speedButtons = document.querySelectorAll(".speedBtn");
+const finalScore = document.getElementById("finalScore");
+const endScreen = document.getElementById("endScreen");
+const messageDiv = document.getElementById("message");
 
-// ===== フォーカス固定 =====
-input.focus();
-input.addEventListener("blur", () => {
-  setTimeout(() => input.focus(), 0);
+// ★速度選択ボタンの処理
+speedButtons.forEach(btn => {// それぞれの速度選択ボタンにクリックイベントを追加
+  btn.onclick = () => {// ボタンがクリックされたときの処理
+    baseSpeed = parseFloat(btn.dataset.speed);
+    speed = baseSpeed;
+    pointPerCorrect = parseInt(btn.dataset.point);
+    // ★画面切り替え
+    startScreen.style.display = "none";
+    gameScreen.style.display = "block";
+    showMessage("日本語入力にし，　1文字目を入力せよ", 3000);
+    // ===== フォーカス固定 =====
+    input.focus();                            //最初にフォーカスを当てる
+    input.addEventListener("blur", () => {    // フォーカスが外れたらすぐに戻す
+      setTimeout(() => input.focus(), 0);     // 0ミリ秒後にフォーカスを当てる（これでblurイベントの後に実行される）
+    });
+    // ★ゲーム開始
+    spawn();
+  };
 });
 
-// ===== 敵生成 =====
-function spawn(){
 
-  if(index >= queue.length){
-    alert("終了！スコア:"+score);
-    location.reload();
+// 横移動速度
+let baseSpeed = 5.2;       // ★基本速度（重要）
+let speed = baseSpeed;      // 現在の速度
+let speedUp = 0.3;          // 1段落ちるごとの加速量
+let stepDown = 20;          // 1段下がる量
+let maxY = 320;             // 最下ライン
+let pointPerCorrect = 4;
+
+// ===== 要素 =====
+const game = document.getElementById("playArea");     //敵を表示するエリア
+const input = document.getElementById("input");       //文字入力用のinput
+const cand = document.getElementById("candidates");   //候補表示用のdiv
+const result = document.getElementById("result");     //現在入力している文字を表示するdiv
+const scoreDiv = document.getElementById("score");    //スコア表示用のspan
+const end = document.getElementById("endScreen");//エンドスクリーンの要素
+const scoreText = document.getElementById("finalScore");//エンドスクリーンのスコア表示要素
+const btn = document.createElement("button");
+btn.id = "nextStageBtn";
+btn.textContent = "次のステージへ";
+const retryBtn = document.createElement("button");
+retryBtn.id = "retryStageBtn";
+retryBtn.textContent = "やり直し";
+
+// ===== メッセージ表示 =====
+function showMessage(text){
+  messageDiv.textContent = text;
+  messageDiv.style.display = "block";
+}
+// ===== メッセージ非表示 =====
+function hideMessage(){
+  messageDiv.style.display = "none";
+}
+
+// ===== 敵生成 =====
+function spawn(){                   //敵を生成する関数
+  const p = queue[index];  // ★必ず最初に置く
+  x = 0;          // 敵のx座標
+  y = -40;        // 敵のy座標
+  dir = 1;        // 敵の移動方向
+  stepCount = 0;
+
+  if(!p){//安全確認
     return;
   }
 
-  const p = queue[index];
-
-  const div = document.createElement("div");
-  div.className = "enemy";
-
-  const img = document.createElement("img");
-  img.src = p.image;
-
-  div.appendChild(img);
-  game.appendChild(div);
-
-  enemy = {
-    el: div,
-    img: img,
-    ans: p.name
+  currentAnswer = p.answers[0];//現在の正解を最初の候補にする（重要）
+  const div = document.createElement("div");    //敵のdivを作成
+  div.className = "enemy";//敵のクラスを設定
+  const img = document.createElement("img");//敵の画像を作成
+  img.src = p.image;//敵の画像のURLを設定
+  const scale = p.scale || 0.4;//画像の倍率を設定（データにない場合は0.4）
+  img.style.transform = `scale(${scale})`;//画像の拡大率を設定
+  img.style.transformOrigin = "center";// 
+  div.appendChild(img);//敵のdivに画像を追加
+  game.appendChild(div);//ゲームエリアに敵のdivを追加
+  enemy = {//現在の敵の情報をオブジェクトで管理
+    el: div,//敵のdiv要素
+    img: img,//敵の画像要素
+    ans: p.answers//敵の正解の候補の配列
   };
-
-  // ★初期位置はここでOK
-  y = 0;
-  enemy.el.style.top = "0px";
-  enemy.el.style.left = "120px";
+  enemy.el.style.left = x + "px";//敵の位置を更新
+  enemy.el.style.top = y + "px";//敵の位置を更新  
+  // ===== BGM再生速度 =====
+  if(speed === 1.2){
+    fallSound.playbackRate = 1.2;
+  }
+  if(speed === 5.2){
+    fallSound.playbackRate = 3.0;
+  }
+  if(speed === 10.2){
+    fallSound.playbackRate = 5.0;
+  }
+  fallSound.currentTime = 0;
+  fallSound.play();
 }
 
-// ===== 爆発 =====
-function explode(e){
-  const r=e.img.getBoundingClientRect();
-  const gr=game.getBoundingClientRect();
-  const w=r.width,h=r.height;
 
-  for(let i=0;i<6;i++){
+// ===== 爆発 =====
+function explode(e){                      // ★敵の画像の位置とサイズを取得
+  const r=e.img.getBoundingClientRect();  //構造式の画像の位置とサイズを取得
+  const gr=game.getBoundingClientRect();  //ゲームエリアの位置とサイズを取得
+  const w=r.width,h=r.height;             //構造式の画像の幅と高さを取得
+
+  for(let i=0;i<6;i++){                   //構造式の画像を6x6の破片に分割して爆発させる
     for(let j=0;j<6;j++){
 
       const d=document.createElement("div");
       d.className="piece";
-
       let pw=w/6,ph=h/6;
-
       d.style.width=pw+"px";
       d.style.height=ph+"px";
       d.style.backgroundImage=`url(${e.img.src})`;
       d.style.backgroundSize=`${w}px ${h}px`;
       d.style.backgroundPosition=`-${i*pw}px -${j*ph}px`;
-
       let x=r.left-gr.left+i*pw;
       let y=r.top-gr.top+j*ph;
-
       d.style.left=x+"px";
       d.style.top=y+"px";
-
       game.appendChild(d);
-
       let vx=(Math.random()-0.5)*6;
       let vy=(Math.random()-0.5)*6;
 
-      function mv(){
+      function mv(){//破片を動かす関数
         x+=vx; y+=vy; vy+=0.2;
         d.style.left=x+"px";
         d.style.top=y+"px";
@@ -334,161 +611,429 @@ function explode(e){
 }
 
 // ===== 入力 =====
-input.addEventListener("input",()=>{
-  const k=input.value.trim()[0];
-  if(!k) return;
+input.addEventListener("input",()=>{      //入力イベントが発生したときの処理
+  if(/[ぁ-んァ-ン]/.test(input.value)){
+    hideMessage();
+  }
+  // ===== ベンゼンのときだけ,チュートリアル表示 =====
+  if(
+    enemy &&
+    enemy.ans.includes("ベンゼン") &&
+    input.value === "べ"
+  ){
+    showMessage("候補を選択せよ");
+  }
+  const k=input.value.trim()[0];          //入力された文字の最初の1文字を取得
+  if(!k) return;                          //入力が空の場合は何もしない
+  const list = map[k] || [];
+  const label = document.getElementById("resultLabel");
+ 
 
-  cand.innerHTML="";
-  (map[k]||[]).forEach(w=>{
-    const b=document.createElement("button");
-    b.textContent=w;
-    b.onclick=()=>{
-      parts.push(w);
-      input.value="";
-      result.textContent=parts.join("");
-        // ★候補を消す
-        cand.innerHTML = "";
-      input.focus();
+if(list.length > 0){
+
+  cand.style.display = "block";
+  result.style.display = "flex";
+  label.style.display = "block";
+
+}else{
+
+  cand.style.display = "none";
+  result.style.display = "none";
+  label.style.display = "none";
+}
+
+  cand.innerHTML = "";
+  list.forEach(w=>{     //入力された文字に対応する候補がある場合はそれぞれの候補について処理
+    const b=document.createElement("button"); //候補を表示するボタンを作成
+    b.textContent=w;                          //ボタンのテキストを候補の文字列にする
+    b.onclick=()=>{                           //ボタンがクリックされたときの処理
+      parts.push(w);                          //現在入力している文字の配列に候補の文字列を追加
+      input.value="";                         //入力欄を空にする
+      result.textContent=parts.join("");      //現在入力している文字を更新
+      cand.innerHTML = "";                    // ★候補を消す
+      if(
+        enemy &&
+        enemy.ans.includes("ベンゼン") &&
+        currentAnswer === "ベンゼン"
+      ){
+        showMessage("発射ボタンを押せ", 999999);
+      }
+      input.focus();                          //入力欄にフォーカスを戻す
     };
-    cand.appendChild(b);
+    cand.appendChild(b);                      //候補のボタンを候補表示用のdivに追加
   });
 });
 
 // ===== Enterで発射 =====
-input.addEventListener("keydown", (e)=>{
-  if(e.key==="Enter"){
-    fire();
+input.addEventListener("keydown", (e)=>{          //キーが押されたときの処理
+  if(e.key==="Enter"){                            //押されたキーがEnterの場合
+    fire();                                       //発射する関数を呼び出す    
   }
 });
 
 // ===== 発射 =====
-function fire(){
-  const text=parts.join("");
-  if(!text) return;
-
-  fireSound.currentTime = 0;
-  fireSound.play().catch(()=>{});
-
-  const s=document.createElement("div");
-  s.className="shot";
-  s.textContent=text;
-
-  let sx=140, sy=380;
-  s.style.left=sx+"px";
-  s.style.top=sy+"px";
-
-  game.appendChild(s);
-
-  shots.push({el:s,x:sx,y:sy,text:text});
-
-  parts=[];
-  result.textContent="";
+function fire(){                                  //発射する関数
+  hideMessage();
+  if(!soundStarted){
+    fallSound.play();
+    fallSound.pause();
+    soundStarted = true;
+  }
+    const text=parts.join("");                      //現在入力している文字を結合して1つの文字列にする
+  if(!text) return;                               //入力が空の場合は何もしない
+  fireSound.currentTime = 0;                      // ★発射音を最初から再生する
+  fireSound.play().catch(()=>{});                 // ★発射音を再生する（エラーが出ることがあるのでcatchで無視する）
+  const s=document.createElement("div");          //発射する弾のdivを作成
+  s.className="shot";                             //弾のクラスを設定
+  s.textContent=text;                             //弾のテキストを設定
+  let sx=140, sy=380;                             //弾の初期位置を設定（ゲームエリアの下中央）
+  s.style.left=sx+"px";                           //弾の位置を更新
+  s.style.top=sy+"px";                            //弾の位置を更新
+  game.appendChild(s);                            //弾をゲームエリアに追加
+  shots.push({el:s,x:sx,y:sy,text:text});         //発射されている弾の配列に追加
+  parts=[];                                       //現在入力している文字の配列をリセット
+  result.textContent="";                          //現在入力している文字を更新
+  
   input.focus();
 }
 
-document.getElementById("submit").onclick=fire;
+document.getElementById("submit").onclick=fire;   // 発射ボタンがクリックされたときの処理
 
-// ===== 更新 =====
-function update(){
+// ===== ミサイル処理 =====
+function updateShots(){
+  for(let i = shots.length - 1; i >= 0; i--){
+    const s = shots[i];
+    // ===== 解答を上へ移動 =====
+    s.y -= 4;
+    s.el.style.top = s.y + "px";
+    if(enemy){                    // ===== 敵がいるときだけ判定 =====
+      const er = enemy.el.getBoundingClientRect();
+      const sr = s.el.getBoundingClientRect();
+      const hit =
+        sr.top < er.bottom &&
+        sr.bottom > er.top &&
+        sr.left < er.right &&
+        sr.right > er.left;
+      // ===== 命中 =====
+      if(hit){
+        handleShotHit(s);
+        // ===== ミサイル削除 =====
+        s.el.remove();
+        shots.splice(i, 1);
+        continue;
+      }
+    }
+    // ===== 画面外 =====
+    if(s.y < 0){
+      s.el.remove();
+      shots.splice(i, 1);
+    }
+  }
+}
 
-  if(enemy){
+// ===== 命中処理 =====
+function handleShotHit(s){
+  // ===== 正解 =====
+  if(enemy.ans.includes(s.text)){
+    score += pointPerCorrect;
+    correctCount++;
+    stageCorrect++;
+    stageScore += pointPerCorrect;
+    scoreDiv.textContent = score;
+    fallSound.pause();
+    explosionSound.currentTime = 0;
+    explosionSound.play();
+    explode(enemy);
+    enemy.el.remove();
+    enemy = null;
+    index++;
+    speed = baseSpeed;
+    // ===== 次問題 =====
+    if(index < queue.length){
+      setTimeout(() => {
+        spawn();
+      }, 500);
+    }
+  }else{
+    // ===== 不正解 =====
+    ngSound.currentTime = 0;
+    ngSound.play().catch(()=>{});
+    wrongCount++;
+    wrongList.push({
+      correct: enemy.ans[0],
+      your: s.text
+    });
+  }
+}
 
-  let x = enemy.el.offsetLeft;
+// ===== 壁衝突処理 =====
+function checkWallCollision(rect, areaRect){
+  const hitLeft =
+    rect.left <= areaRect.left - rect.width * 0.75;
+  const hitRight =
+    rect.right >= areaRect.right + rect.width * 0.75;
+  // ===== 衝突していない =====
+  if(!hitLeft && !hitRight){
+    return;
+  }
+  // ===== 方向反転 =====
+  dir = hitLeft ? 1 : -1;
+  // ===== めり込み補正 =====
+  if(hitLeft){
+    x += (
+      areaRect.left -
+      rect.left -
+      rect.width * 0.75
+    );
+  }else{
+    x -= (
+      rect.right -
+      areaRect.right -
+      rect.width * 0.75
+    );
+  }
+  // ===== 下へ移動 =====
+  y += stepDown * 200 / rect.height;
+  // ===== 加速 =====
+  speed += speedUp;
+  stepCount++;
+  // ===== 最下段 =====
+  if(stepCount >= MAX_STEP){
+    handleEnemyEscape();
+  }
+}
+
+// ===== 敵逃走処理 =====
+function handleEnemyEscape(){
+  fallSound.pause();
+  wrongList.push({
+    correct: enemy.ans[0],
+    your: "(未回答)"
+  });
+  wrongCount++;
+  enemy.el.remove();
+  enemy = null;
+  index++;
+  stepCount = 0;
+  // ===== 初期化 =====
+  speed = baseSpeed;
+  x = 0;
+  y = -40;
+  dir = 1;
+  // ===== 次問題 =====
+  if(index < queue.length){
+    setTimeout(() => {
+      spawn();
+    }, 500);
+  }
+if(!enemy){
+  return;
+}
+}
+
+// ===== 敵更新 =====
+function updateEnemy(){
+
+  // ===== 横移動 =====
   x += dir * speed;
   enemy.el.style.left = x + "px";
 
-  if(x <= 0){
-    dir = 1;
-    y += stepDown;
-    speed += speedUp;
+  // ===== 当たり判定用矩形 =====
+  const rect = enemy.el.getBoundingClientRect();
+
+  const areaRect =
+    game.getBoundingClientRect();
+
+  // ===== 壁衝突 =====
+  checkWallCollision(rect, areaRect);
+if(!enemy){
+    return;
   }
 
-  if(x >= 240){
-    dir = -1;
-    y += stepDown;
-    speed += speedUp;
-  }
 
+  // ===== 位置更新 =====
+  enemy.el.style.left = x + "px";
   enemy.el.style.top = y + "px";
-
-  // ★ここが新しい判定
-  const areaRect = game.getBoundingClientRect();
-  const enemyRect = enemy.el.getBoundingClientRect();
-
-  if(enemyRect.bottom >= areaRect.bottom){
-
-    fall++;
-    enemy.el.remove();
-    enemy = null;
-
-    index++;
-    fall = 0;
-
-    speed = baseSpeed; // ←リセット（重要）
-
-    spawn();
-  }
 }
 
-  // ミサイル処理はそのまま
-  shots.forEach((s,i)=>{
-    s.y -= 4;
-    s.el.style.top = s.y + "px";
 
-    if(enemy){
-      const er = enemy.el.getBoundingClientRect();
-      const sr = s.el.getBoundingClientRect();
+function update(){
+  // ===== ステージ終了判定 =====現在の問題がステージの最後の問題を超えた場合
+  if(index >= stageStart + stageSize || index >= queue.length){
+    endGame();
+    return;
+  }
+  // ===== 敵がいないときは待機 =====
+  if(!enemy){
+    requestAnimationFrame(update);
+    return;
+  }
 
-      if(sr.top < er.bottom && sr.bottom > er.top &&
-         sr.left < er.right && sr.right > er.left){
+  // ===== 敵更新 =====
+  updateEnemy();
 
-        if(s.text === enemy.ans){
+  // ===== ミサイル処理 =====
+  updateShots();
 
-          // 正解処理
-          score += 5 - fall;
-          scoreDiv.textContent = score;
-
-          explosionSound.currentTime = 0;
-          explosionSound.play();
-
-          explode(enemy);
-          enemy.el.remove();
-          enemy = null;
-
-          index++;
-          fall = 0;
-          speed = baseSpeed;
-
-          setTimeout(spawn, 500);
-
-        }else{
-
-          // ★不正解音
-          ngSound.currentTime = 0;
-          ngSound.play().catch(()=>{});
-
-        }
-
-        s.el.remove();
-        shots.splice(i,1);
-      }
-    }
-
-    if(s.y < 0){
-      s.el.remove();
-      shots.splice(i,1);
-    }
-  });
-
+  // ===== 最後に1回だけループ =====
   requestAnimationFrame(update);
 }
 
+
+function resetStage(){
+  // ===== 古い敵削除 =====
+  if(enemy && enemy.el){
+    enemy.el.remove();
+  }
+  enemy = null;
+  // ===== リセット =====
+  stageCorrect = 0;
+  stageScore = 0;
+  parts = [];
+  shots = [];
+  result.textContent = "";
+  cand.innerHTML = "";
+  input.value = "";
+  // ===== 位置 =====
+  x = 0;
+  y = -40;
+  dir = 1;
+  speed = baseSpeed;
+}
+
+function restartGame(){
+  endScreen.style.display = "none";
+  gameScreen.style.display = "block";
+  spawn();
+  requestAnimationFrame(update);
+  input.focus();
+}
+
+// ===== やり直しのボタン =====
+document.getElementById("retryStageBtn").onclick = () => {
+  index = stageStart;
+  // ===== ステージ得点を取り消し =====
+  score -= stageScore;
+  if(score < 0){
+    score = 0;
+  }
+  scoreDiv.textContent = score;
+  resetStage();
+  restartGame();
+};
+
+// ===== 次のステージのボタン =====
+document.getElementById("nextStageBtn").onclick = () => {
+  stageStart += stageSize;
+  if(stageStart >= queue.length){
+    alert("全ステージクリア！");
+    location.reload();
+    return;
+  }
+  index = stageStart;
+  resetStage();
+  restartGame();
+};
+
+//===========ベンゼンから==============
+function resetGame(){
+  // ===== 得点リセット =====
+  score = 0;
+  stageScore = 0;
+  scoreDiv.textContent = 0;
+  // ===== 最初の問題へ =====
+  index = 0;
+  level = 1;
+  stageStart = 0;
+  // ===== カウント初期化 =====
+  correctCount = 0;
+  wrongCount = 0;
+  stageCorrect = 0;
+}
+
+
+function endGame(){
+  const levelText = document.getElementById("levelUpText");// レベルアップのテキスト要素
+  gameScreen.style.display = "none";// ゲーム画面を隠す
+  endScreen.style.display = "flex";// エンドスクリーンを表示する
+
+  //document.getElementById("finalScore").textContent =
+  //  "得点：" + score;// ステージ得点を表示
+    const nextBtn = document.getElementById("nextStageBtn");// 次のステージのボタン要素
+    const retryBtn = document.getElementById("retryStageBtn");// やり直しのボタン要素
+    nextBtn.style.display = "none";// 次のステージのボタンを隠す
+    retryBtn.style.display = "none";// やり直しのボタンを隠す
+  // ===== 合格 =====
+    
+  switch(stageCorrect){
+
+    case 5:
+
+  // ===== ボーナス =====
+  score += 5;
+  scoreDiv.textContent = score;
+
+  levelUpSound.currentTime = 0;
+  levelUpSound.play();
+
+  level++;
+
+  levelText.textContent =
+    "レベル" + level + "になりました！";
+
+  document.getElementById("accuracyComment").textContent =
+    "全問正解！ ボーナス +5点";
+
+  nextBtn.style.display = "inline-block";
+
+  break;
+
+  case 4:
+      // ★レベルアップ音
+    levelUpSound.currentTime = 0;   // レベルアップ音を最初から再生する
+    levelUpSound.play();            // レベルアップ音を再生する
+    level++;                        // レベルを上げる
+    levelText.textContent =
+    "レベル" + level + "になりました！";// レベルアップのテキストを表示
+    document.getElementById("accuracyComment").textContent =
+    "合格！ " + stageCorrect + "/5 正解";// 正解数を表示
+    nextBtn.style.display = "inline-block";// 次のステージのボタンを表示
+  break;
+
+  case 3:
+  case 2:
+    // やり直し
+    levelText.textContent = "";// レベルアップのテキストを消す
+    document.getElementById("accuracyComment").textContent =
+    "正解が3問以下なのでやり直し";// 正解数が3問以下のときのコメントを表示
+    retryBtn.style.display = "inline-block";// やり直しのボタンを表示
+    break;
+
+  case 1:
+  case 0:
+    resetGame();
+    // ゲームオーバー
+    levelText.textContent = "";// レベルアップのテキストを消す
+    document.getElementById("accuracyComment").textContent =
+    "正解が1問以下なので完全リセット";// 正解数が1問以下のときのコメントを表示
+    retryBtn.style.display = "inline-block";// やり直しのボタンを表示
+  break;
+}
+  
+ // ★最後に表示
+  document.getElementById("finalScore").textContent =
+    "得点：" + score; 
+ 
+ 
+  enemy = null;
+}
+
+
+
 // ===== 開始 =====
-spawn();
 update();
 
 });
 </script>
-
 </body>
 </html>
