@@ -8,7 +8,6 @@
 
 <title>構造式ゲーム</title>
 
-
 <style>
 /* ===== 全クリア画面 ===== */
 #completeTitle{
@@ -107,7 +106,7 @@ body {
   justify-content:flex-start;
   gap:30px;
   padding-left:40px;
-  }*/
+}*/
 /* ===== PC ===== */
 #container{
   display:flex;
@@ -119,76 +118,73 @@ body {
 
 /* ===== スマホ ===== */
 @media (max-width: 700px){
-
   #container{
     flex-direction:column;   /* ← 縦並び */
     padding-left:0;
     gap:10px;
     align-items:center;
   }
-
-  /* ゲーム画面を上へ */
+  /* スマホのゲーム画面を上へ */
   #game{
-    order:1;
-    width:95vw;
-    height:36vh;
-    max-width:none;
+    order:1;         /*スマホの左UIより先に表示 */
+    width:95vw;      /*スマホの画面幅いっぱい */
+    height:36vh;     /*スマホの画面の高さの半分 */
+    max-width:none;  /*スマホは最大幅制限なし */
   }
-
   /* 操作UIを下へ */
   #leftPanel{
     order:2;
     width:95vw;
     align-items:center;
   }
-
-  /* 文字ボタン */
+  /* スマホの文字ボタン */
   #charButtons{
-    grid-template-columns:repeat(5, 1fr);
-    gap:8px;
+    grid-template-columns:repeat(5, 1fr);/*5列に変更 */
+    gap:5px;
     width:100%;
     max-width:320px;
   }
-
   .charBtn{
     width:100%;
-    height:52px;
-    font-size:28px;
+    height:42px;
+    font-size:22px;
   }
-
-  /* 候補ボタン */
+  /* スマホの候補ボタン */
   #candidates{
-    display:flex;
-    flex-wrap:wrap;
-    justify-content:center;
-    gap:8px;
+    display:grid;
+    /* 自動で2〜3列になる */
+    grid-template-columns:
+    repeat(auto-fit, minmax(140px,1fr));/*最小140pxで自動調整 */
+    gap:5px;/*ボタン間のスペース */
     width:100%;
     max-width:340px;
+    margin-top:8px;
   }
-
-  #candidates button{
-    font-size:24px;
-    padding:10px 16px;
+  #candidates button{/*候補ボタンをスマホ幅に合わせて大きくする */
+    width:100%;
+    font-size:22px;
+    padding:10px 8px;
+    font-weight:bold;
+    border-radius:10px;
   }
-
-  /* 発射ボタン */
+  /* スマホの発射ボタン */
   #submit{
     width:80%;
-    max-width:300px;
-    font-size:32px;
-    padding:16px;
+    max-width:300px;/
+    font-size:22px;/
+    padding:8px;
+    margin-top:-10px;
   }
-
-  /* スコア */
+  /* スマホのスコア */
   #leftPanel div{
     text-align:center;
   }
-
-  /* 入力文字 */
+  /* スマホの入力文字 */
   #result{
     font-size:24px;
   }
 }
+
 
 
 /* 左UI */
@@ -212,7 +208,7 @@ body {
 #game {
   width: 100%;
   max-width: 350px; /* スマホ最大幅 */
-  height: 36vh;        /* ← 画面の高さ全部を使う */
+  height: 70vh;        /* ← 画面の高さ全部を使う */
   margin: 0 auto;
   position: relative;
   overflow: hidden;
@@ -227,12 +223,12 @@ body {
   background:red;
   color:white;
   border:none;
-  border-radius:12px;
-  font-size:24px;
+  border-radius:8px;
+  font-size:22px;
   font-weight:bold;
-  padding:12px 20px;
+  padding:6px 10px;
   cursor:pointer;
-  margin-top:8px;
+  margin-top:-0px;
   active{
     transform:scale(0.96);
   }
@@ -273,8 +269,8 @@ body {
 .shot {
   position: absolute;
   background: white;
-  padding: 4px 6px;
-  border-radius: 4px;
+  /*padding: 2px 3px;
+  border-radius: 4px;*/
   font-weight: bold;
 }
 
@@ -284,14 +280,25 @@ body {
   pointer-events: none;
 }
 
+#candidates{
+  display:grid;
+  grid-template-columns:
+    repeat(auto-fit, minmax(120px,1fr));
+  gap:8px;
+  width:100%;
+  max-width:420px;
+  margin-top:8px;
+}
+
 /* 候補 */
 #candidates button{
-  margin: 4px;
-  padding: 8px 14px;
-  font-size: 18px;
-  font-weight: bold;
-  border-radius: 10px;
-  cursor: pointer;
+  margin:0;
+  padding:5px 6px;
+  font-size:20px;
+  font-weight:bold;
+  border-radius:8px;
+  cursor:pointer;
+  width:80%;
 }
 
 #resultLabel{
@@ -301,17 +308,17 @@ body {
 #charButtons{
   display:grid;
   grid-template-columns:repeat(6, 44px);
-  gap:6px;
+  gap:3px;
   width:auto;
   margin-bottom:12px;
 }
 
 .charBtn{
-  width: 44px;
-  height:48px;
-  font-size:26px;
+  width: 40px;
+  height:40px;
+  font-size:22px;
   font-weight:bold;
-  border-radius:10px;
+  border-radius:8px;
   cursor:pointer;
 }
 
@@ -587,7 +594,7 @@ const problems = rawData.trim().split("\n").map(l => {
   return { answers, image, scale };
 });
 // ===== 問題数 =====
-total = 10
+total = 15
 // ===== シャッフル =====
 function shuffle(a){
   for(let i=a.length-1;i>0;i--){
@@ -884,8 +891,16 @@ function fire(){                                  //発射する関数
   const s=document.createElement("div");          //発射する弾のdivを作成
   s.className="shot";                             //弾のクラスを設定
   s.textContent=text;                             //弾のテキストを設定
-  let sx=140, sy=340;                             //弾の初期位置を設定（ゲームエリアの下中央）
-  s.style.left=sx+"px";                           //弾の位置を更新
+
+
+//  let sx=140, sy=340;                             //弾の初期位置を設定（ゲームエリアの下中央）
+// ===== 発射位置 =====
+let sx =  game.clientWidth/2 ;
+
+let sy =  game.clientHeight ;
+
+
+s.style.left=sx+"px";                           //弾の位置を更新
   s.style.top=sy+"px";                            //弾の位置を更新
   game.appendChild(s);                            //弾をゲームエリアに追加
   shots.push({el:s,x:sx,y:sy,text:text});         //発射されている弾の配列に追加
@@ -904,13 +919,21 @@ function updateShots(){
     s.y -= 4;
     s.el.style.top = s.y + "px";
     if(enemy){                    // ===== 敵がいるときだけ判定 =====
-      const er = enemy.el.getBoundingClientRect();
-      const sr = s.el.getBoundingClientRect();
+      const er = enemy.el.getBoundingClientRect();    //敵の位置とサイズを取得
+      const sr = s.el.getBoundingClientRect();        //弾の位置とサイズを取得
+     
+
+      // ===== 弾の中心 =====
+      const cx =  sr.left + sr.width / 2;
+      const cy =  sr.top + sr.height / 2;
+
+      // ===== 中心で当たり判定 =====
       const hit =
-        sr.top < er.bottom &&
-        sr.bottom > er.top &&
-        sr.left < er.right &&
-        sr.right > er.left;
+      cx > er.left + er.width * 0.15 &&       //弾の中心が敵の左端より右にあるか
+      cx < er.right - er.width * 0.15 &&      //弾の中心が敵の右端より左にあるか
+      cy > er.top + er.height * 0.35 &&       //弾の中心が敵の上端より下にあるか
+      cy < er.bottom - er.height * 0.35;      //弾の中心が敵の下端より上にあるか
+  
       // ===== 命中 =====
       if(hit){
         handleShotHit(s);
