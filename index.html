@@ -426,15 +426,16 @@ body {
 <!-- ★開始画面 -->
 <div id="startScreen" style="text-align:center;">
   <h2>構造式ゲーム</h2>
-  <div id="description" style="margin:15px; font-size:20px; line-height:1.6;">
+  <div id="description" style="margin:15px; font-size:18px; line-height:1.6;">
     落ちてくる構造式の名前を入力して撃ち落とす！<br>
     入力欄に1文字目を入れると候補が出る<br>
-    候補をクリックして，名前を完成させ，発射で攻撃！<br><br>
+    候補をクリックして，名前を完成させ，発射で攻撃！<br>
+    全40問<br>
   </div>
 
   <h2>速度を選択</h2>
 
-  <button class="speedBtn" data-speed="1.2" data-point="2">低速</button>
+  <button class="speedBtn" data-speed="1.2" data-point="2">低速（1問2点）</button>
   <button class="speedBtn" data-speed="5.2" data-point="4">高速（得点2倍）</button>
   <button class="speedBtn" data-speed="10.2" data-point="8">超高速（得点4倍）</button>
 
@@ -592,7 +593,7 @@ const problems = rawData.trim().split("\n").map(l => {
   return { answers, image, scale };
 });
 // ===== 問題数 =====
-total = 15
+total = 40;
 // ===== シャッフル =====
 function shuffle(a){
   for(let i=a.length-1;i>0;i--){
