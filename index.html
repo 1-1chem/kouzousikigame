@@ -100,13 +100,6 @@ body {
   cursor:pointer;
 }
 
-/* 横並び 
-#container{
-  display:flex;
-  justify-content:flex-start;
-  gap:30px;
-  padding-left:40px;
-}*/
 /* ===== PC ===== */
 #container{
   display:flex;
@@ -128,50 +121,61 @@ body {
   #game{
     order:1;         /*スマホの左UIより先に表示 */
     width:95vw;      /*スマホの画面幅いっぱい */
-    height:36vh;     /*スマホの画面の高さの半分 */
     max-width:none;  /*スマホは最大幅制限なし */
+    height: 300px !important;
+    min-height: 0;
   }
   /* 操作UIを下へ */
   #leftPanel{
     order:2;
     width:95vw;
     align-items:center;
+    width: 100%;
+    max-width: 340px;
+
   }
   /* スマホの文字ボタン */
   #charButtons{
-    grid-template-columns:repeat(5, 1fr);/*5列に変更 */
-    gap:5px;
+  grid-template-columns:
+    repeat(2, minmax(160px,1fr));
+
+  gap:4px 2px;
     width:100%;
     max-width:320px;
   }
   .charBtn{
-    width:100%;
-    height:42px;
-    font-size:22px;
+    width:80%;
+    height:38px;
+    font-size:20px;
   }
   /* スマホの候補ボタン */
   #candidates{
-    display:grid;
-    /* 自動で2〜3列になる */
-    grid-template-columns:
-    repeat(auto-fit, minmax(140px,1fr));/*最小140pxで自動調整 */
-    gap:5px;/*ボタン間のスペース */
-    width:100%;
-    max-width:340px;
-    margin-top:8px;
+  display:grid;
+  grid-template-columns:
+    repeat(2, minmax(160px,1fr));
+  gap:4px 2px;
+  width:100%;
+  margin-top:8px;
+  margin-left:0;
+  padding-left:0;
+  justify-content:start;
+  max-width:none;
   }
-  #candidates button{/*候補ボタンをスマホ幅に合わせて大きくする */
-    width:100%;
-    font-size:22px;
-    padding:10px 8px;
+
+  #candidates button{
+    padding:5px 6px;
+    font-size:20px;
     font-weight:bold;
-    border-radius:10px;
+    border-radius:8px;
+    width:100%;
+    justify-self:start;
   }
+  
   /* スマホの発射ボタン */
   #submit{
     width:80%;
-    max-width:300px;/
-    font-size:22px;/
+    max-width:300px;
+    font-size:22px;
     padding:8px;
     margin-top:-10px;
   }
@@ -192,31 +196,20 @@ body {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  width: 180px;
+  width: 100%;
+  max-width: 340px;
 }
-
-/* ゲーム */
-/*#game {
-  width: 320px;
-  height: 420px;
-  border: 2px solid black;
-  display: flex;
-  flex-direction: column;
-  position:relative;
-}*/
 
 #game {
   width: 100%;
   max-width: 350px; /* スマホ最大幅 */
-  height: 70vh;        /* ← 画面の高さ全部を使う */
+  height: 60vh;        /* ← 画面の高さ全部を使う */
   margin: 0 auto;
   position: relative;
   overflow: hidden;
   border: 2px solid black;
   display: flex;
   flex-direction: column;
-
-
 }
 
 #submit{
@@ -283,28 +276,31 @@ body {
 #candidates{
   display:grid;
   grid-template-columns:
-    repeat(auto-fit, minmax(120px,1fr));
-  gap:8px;
+    repeat(2, minmax(160px,1fr));
+  gap:4px 2px;
   width:100%;
-  max-width:420px;
   margin-top:8px;
+  margin-left:0;
+  padding-left:0;
+  justify-content:start;
+  max-width:none;
 }
-
 /* 候補 */
 #candidates button{
-  margin:0;
   padding:5px 6px;
   font-size:20px;
   font-weight:bold;
   border-radius:8px;
   cursor:pointer;
-  width:80%;
+  width:100%;
+  justify-self:start;
 }
 
 #resultLabel{
   display:none;
 }
 
+/* 文字ボタン 5行6列*/
 #charButtons{
   display:grid;
   grid-template-columns:repeat(6, 44px);
@@ -312,7 +308,6 @@ body {
   width:auto;
   margin-bottom:12px;
 }
-
 .charBtn{
   width: 40px;
   height:40px;
@@ -338,7 +333,6 @@ body {
   padding-top: 40px; 
   z-index: 9999;
   overflow: hidden;       /* ← 全体は固定 */
-  
 }
 
 #endScreen h2 {
@@ -352,6 +346,8 @@ body {
   text-shadow: 2px 2px 0 #000;
   margin: 0 0 10px 0;     /* 上の余白をなくす */
 }
+
+/* 間違えた問題のスクロールエリア */
 #retryBtn {
   flex-shrink: 0;
    margin: 0 0 30px 0; 
@@ -367,10 +363,11 @@ body {
 }
 
 #score {
-  font-size: 48px;
+  font-size: 24px;
   color: red;
 }
 
+/* レベルアップテキスト */
 #levelUpText{
   font-size:40px;
   font-weight:bold;
@@ -378,6 +375,7 @@ body {
   margin:20px;
 }
 
+/* チュートリアルメッセージ */
 #tutorialMessage{
   height:40px;
   margin-top:10px;
@@ -399,6 +397,7 @@ body {
   text-align:center;
 }
 
+/* 次のステージ・やり直しボタン */
 #nextStageBtn,
 #retryStageBtn{
   font-size: 48px;
@@ -414,7 +413,6 @@ body {
   display:block;
   margin:40px auto;
 }
-
 #nextStageBtn:hover,
 #retryStageBtn:hover{
   transform: scale(1.05);
@@ -929,8 +927,8 @@ function updateShots(){
 
       // ===== 中心で当たり判定 =====
       const hit =
-      cx > er.left + er.width * 0.15 &&       //弾の中心が敵の左端より右にあるか
-      cx < er.right - er.width * 0.15 &&      //弾の中心が敵の右端より左にあるか
+      cx > er.left + er.width * 0.1 &&       //弾の中心が敵の左端より右にあるか
+      cx < er.right - er.width * 0.1 &&      //弾の中心が敵の右端より左にあるか
       cy > er.top + er.height * 0.35 &&       //弾の中心が敵の上端より下にあるか
       cy < er.bottom - er.height * 0.35;      //弾の中心が敵の下端より上にあるか
   
