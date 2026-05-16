@@ -1,108 +1,96 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-
 <meta charset="UTF-8">
-
 <title>構造式ゲーム</title>
 
 <style>
-/* ===== 全クリア画面 ===== */
-#completeTitle{
-  font-size:48px;   /* 72 → 48 */
-  font-weight:bold;
-  color:#ffcc00;
-  text-shadow:
-    0 0 6px #fff,
-    0 0 12px orange,
-    3px 3px 0 #000;
-  animation: completePop 1s infinite alternate;
-  text-align:center;
-}
-
-@keyframes completePop{
-  from{
-    transform:scale(1);
+  /* ===== 全クリア画面 ===== */
+  #completeTitle{
+    font-size:48px;   /* 72 → 48 */
+    font-weight:bold;
+    color:#ffcc00;
+    text-shadow:
+      0 0 6px #fff,
+      0 0 12px orange,
+      3px 3px 0 #000;
+    animation: completePop 1s infinite alternate;
+    text-align:center;
   }
-  to{
+
+  @keyframes completePop{
+    from{
+      transform:scale(1);
+    }
+    to{
+      transform:scale(1.05);
+    }
+  }
+    #completeSub{
+    font-size:22px;   /* 32 → 22 */
+    margin-top:14px;
+    color:white;
+    text-shadow:2px 2px 4px black;
+    line-height:1.5;
+    text-align:center;
+  }
+  #completeRank{
+    font-size:52px;   /* 80 → 52 */
+    font-weight:bold;
+    margin-top:18px;
+    color:#ff4444;
+    text-shadow:
+      0 0 8px white,
+      0 0 14px yellow,
+      3px 3px 0 black;
+    text-align:center;
+  }
+  #completeButtons{
+    margin-top:24px;
+  }
+  #restartAllBtn{
+    font-size:28px;   /* 42 → 28 */
+    padding:14px 30px;
+    border:none;
+    border-radius:16px;
+    background:linear-gradient(#ffcc00,#ff6600);
+    color:white;
+    font-weight:bold;
+    cursor:pointer;
+    box-shadow:0 0 12px orange;
+  }
+  #restartAllBtn:hover{
+    transform:scale(1.03);
+  }
+  #restartAllBtn:hover{
     transform:scale(1.05);
   }
-}
+  body {
+    font-family: sans-serif;
+  }
+  #startScreen {
+    position: fixed;
+    top:0; left:0;
+    width:100%;
+    height:100%;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    background:#fff;
+  }
+  .speedBtn{
+    font-size:24px;
+    padding:10px 18px;
+    margin:6px;
+    border-radius:12px;
+    cursor:pointer;
+  }
 
-#completeSub{
-  font-size:22px;   /* 32 → 22 */
-  margin-top:14px;
-  color:white;
-  text-shadow:2px 2px 4px black;
-  line-height:1.5;
-  text-align:center;
-}
-
-#completeRank{
-  font-size:52px;   /* 80 → 52 */
-  font-weight:bold;
-  margin-top:18px;
-  color:#ff4444;
-  text-shadow:
-    0 0 8px white,
-    0 0 14px yellow,
-    3px 3px 0 black;
-  text-align:center;
-}
-
-#completeButtons{
-  margin-top:24px;
-}
-
-#restartAllBtn{
-  font-size:28px;   /* 42 → 28 */
-  padding:14px 30px;
-  border:none;
-  border-radius:16px;
-  background:linear-gradient(#ffcc00,#ff6600);
-  color:white;
-  font-weight:bold;
-  cursor:pointer;
-  box-shadow:0 0 12px orange;
-}
-
-#restartAllBtn:hover{
-  transform:scale(1.03);
-}
-
-#restartAllBtn:hover{
-  transform:scale(1.05);
-}
-
-body {
-  font-family: sans-serif;
-}
-
-#startScreen {
-  position: fixed;
-  top:0; left:0;
-  width:100%;
-  height:100%;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  background:#fff;
-}
-
-.speedBtn{
-  font-size:24px;
-  padding:10px 18px;
-  margin:6px;
-  border-radius:12px;
-  cursor:pointer;
-}
-
-/* ===== PC ===== */
-#container{
-  display:flex;
+  /* ===== PC ===== */
+  #container{
+    display:flex;
   justify-content:flex-start;
   gap:30px;
   padding-left:40px;
@@ -357,7 +345,6 @@ body {
   position: absolute;
   right: 20px;
   top: 20px;
-
   font-size: 28px;
   font-weight: bold;
 }
@@ -426,7 +413,7 @@ body {
 <!-- ★開始画面 -->
 <div id="startScreen" style="text-align:center;">
   <h2>構造式ゲーム</h2>
-  <div id="description" style="margin:15px; font-size:18px; line-height:1.6;">
+  <div id="description" style="margin:15px; font-size:20px; line-height:1.6;">
     落ちてくる構造式の名前を入力して撃ち落とす！<br>
     入力欄に1文字目を入れると候補が出る<br>
     候補をクリックして，名前を完成させ，発射で攻撃！<br>
@@ -435,9 +422,9 @@ body {
 
   <h2>速度を選択</h2>
 
-  <button class="speedBtn" data-speed="1.2" data-point="2">低速（1問2点）</button>
-  <button class="speedBtn" data-speed="5.2" data-point="4">高速（得点2倍）</button>
-  <button class="speedBtn" data-speed="10.2" data-point="8">超高速（得点4倍）</button>
+  <button class="speedBtn" data-speed="0.2" data-point="2">超低速（1問2点）</button>
+  <button class="speedBtn" data-speed="1.2" data-point="4">低速（得点2倍）</button>
+  <button class="speedBtn" data-speed="3.2" data-point="8">高速（得点4倍）</button>
 
 </div>
 
@@ -514,7 +501,6 @@ body {
 
 <script>
 window.addEventListener("DOMContentLoaded", () => {
-  
   //効果音
   const explosionSound = new Audio(
     "https://raw.githubusercontent.com/1-1chem/kouzousikigame/main/explosion-sound.mp3"
@@ -791,15 +777,16 @@ function spawn(){                   //敵を生成する関数
   };
   enemy.el.style.left = x + "px";//敵の位置を更新
   enemy.el.style.top = y + "px";//敵の位置を更新  
-  // ===== BGM再生速度 =====
+
+  // ===== 敵の行進音再生速度 =====
+  if(speed === 0.2){
+    fallSound.playbackRate = 0.5;
+  }
   if(speed === 1.2){
     fallSound.playbackRate = 1.2;
   }
-  if(speed === 5.2){
-    fallSound.playbackRate = 3.0;
-  }
-  if(speed === 10.2){
-    fallSound.playbackRate = 5.0;
+  if(speed === 3.2){
+    fallSound.playbackRate = 3.2;
   }
   fallSound.currentTime = 0;
   fallSound.play();
@@ -1065,7 +1052,7 @@ function updateEnemy(){
 
   // ===== 壁衝突 =====
   checkWallCollision(rect, areaRect);
-if(!enemy){
+  if(!enemy){
     return;
   }
 
@@ -1175,9 +1162,12 @@ function resetGame(){
 }
 
 function endGame(){
-
+  fallSound.pause();
+  fallSound.currentTime = 0;
   // ===== 全クリア判定 =====
   if(index >= queue.length){
+    fallSound.pause();
+    fallSound.currentTime = 0;
     endScreen.style.display = "flex";
     // 背景変更
     endScreen.style.background =
@@ -1212,7 +1202,6 @@ function endGame(){
   return;
 }
 
-
   const levelText = document.getElementById("levelUpText");// レベルアップのテキスト要素
   gameScreen.style.display = "none";// ゲーム画面を隠す
   endScreen.style.display = "flex";// エンドスクリーンを表示する
@@ -1228,6 +1217,7 @@ function endGame(){
     case 5:
       // ===== ボーナス =====
       score += 5;
+  
       scoreDiv.textContent = score;
       levelUpSound.currentTime = 0;
       levelUpSound.play();
@@ -1240,7 +1230,8 @@ function endGame(){
     break;
 
     case 4:
-      // ★レベルアップ音
+  
+    // ★レベルアップ音
       levelUpSound.currentTime = 0;   // レベルアップ音を最初から再生する
       levelUpSound.play();            // レベルアップ音を再生する
       level++;                        // レベルを上げる
