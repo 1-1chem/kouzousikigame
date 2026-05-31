@@ -79,6 +79,8 @@
     align-items:center;
     justify-content:center;
     background:#fff;
+    overflow-y:auto;
+    padding:20px 0;
   }
   .speedBtn{
     font-size:24px;
@@ -86,6 +88,29 @@
     margin:6px;
     border-radius:12px;
     cursor:pointer;
+  }
+  
+  /* セーブ機能用のボタンスタイル */
+  .menuBtn {
+    font-size: 26px;
+    padding: 12px 24px;
+    margin: 10px;
+    border-radius: 14px;
+    cursor: pointer;
+    font-weight: bold;
+    border: 2px solid #333;
+  }
+  #newGameBtn {
+    background: #e0f0ff;
+  }
+  #continueBtn {
+    background: #e0ffe0;
+  }
+  #continueBtn:disabled {
+    background: #ccc;
+    color: #666;
+    cursor: not-allowed;
+    border-color: #999;
   }
 
   /* ===== PC ===== */
@@ -410,7 +435,6 @@
 
 <body>
 
-<!-- ★開始画面 -->
 <div id="startScreen" style="text-align:center;">
   <h2>構造式を名称で撃て</h2>
   <div id="description" style="margin:15px; font-size:20px; line-height:1.6;">
@@ -420,18 +444,22 @@
     全40問<br>
   </div>
 
-  <h2>速度を選択</h2>
+  <div id="saveMenuArea" style="margin-bottom: 20px;">
+    <button id="newGameBtn" class="menuBtn">最初からはじめる</button>
+    <button id="continueBtn" class="menuBtn" disabled>続きからはじめる</button>
+    <div id="saveStatus" style="font-size: 16px; color: #666; margin-top: 5px;"></div>
+  </div>
 
-  <button class="speedBtn" data-speed="0.2" data-point="2">超低速（1問2点）</button>
-  <button class="speedBtn" data-speed="1.2" data-point="4">低速（得点2倍）</button>
-  <button class="speedBtn" data-speed="3.2" data-point="8">高速（得点4倍）</button>
-
+  <div id="speedSelectionArea" style="display:none;">
+    <h2>速度を選択</h2>
+    <button class="speedBtn" data-speed="0.2" data-point="2">超低速（1問2点）</button>
+    <button class="speedBtn" data-speed="1.2" data-point="4">低速（得点2倍）</button>
+    <button class="speedBtn" data-speed="3.2" data-point="8">高速（得点4倍）</button>
+  </div>
 </div>
 
-<!-- ★ゲーム画面（最初は非表示） -->
 <div id="gameScreen" style="display:none;">
   <div id="container">
-    <!-- 左 -->
     <div id="leftPanel">
       <div id="charButtons"></div>
       <div id="candidates"></div>
@@ -439,7 +467,6 @@
       <div>スコア: <span id="score">0</span></div>
       <div id="tutorialMessage"></div> 
     </div>
-    <!-- 右 -->
     <div id="game">
       <div id="playArea"></div>
       <div id="result"></div>
@@ -447,7 +474,6 @@
   </div>
 </div>
 
-<!-- エンドスクリーン -->
 <div id="endScreen" style="
   display:none;
   position:fixed;
@@ -579,15 +605,7 @@ const problems = rawData.trim().split("\n").map(l => {
   return { answers, image, scale };
 });
 // ===== 問題数 =====
-total = 40;
-// ===== シャッフル =====
-function shuffle(a){
-  for(let i=a.length-1;i>0;i--){
-    let j=Math.floor(Math.random()*(i+1));
-    [a[i],a[j]]=[a[j],a[i]];
-  }
-  return a;
-}
+let total = 40;
 
 let queue = problems.slice(0,total);
 let index = 0;//現在の問題のインデックス
@@ -689,22 +707,6 @@ const finalScore = document.getElementById("finalScore");
 const endScreen = document.getElementById("endScreen");
 const messageDiv = document.getElementById("message");
 
-// ★速度選択ボタンの処理
-speedButtons.forEach(btn => {// それぞれの速度選択ボタンにクリックイベントを追加
-  btn.onclick = () => {// ボタンがクリックされたときの処理
-    baseSpeed = parseFloat(btn.dataset.speed);
-    speed = baseSpeed;
-    pointPerCorrect = parseInt(btn.dataset.point);
-    // ★画面切り替え
-    startScreen.style.display = "none";
-    gameScreen.style.display = "block";
-    
-    // ===== フォーカス固定 =====
-        // ★ゲーム開始
-    spawn();
-  };
-});
-
 // 横移動速度
 let baseSpeed = 5.2;       // ★基本速度（重要）
 let speed = baseSpeed;      // 現在の速度
@@ -726,6 +728,87 @@ const btn = document.createElement("button");
 const retryBtn = document.createElement("button");
   retryBtn.id = "retryStageBtn";
   retryBtn.textContent = "やり直し";
+
+// ===== セーブシステムの実装 =====
+const SAVE_KEY = "arom_kouzousiki_game_save";
+
+function checkSaveData() {
+  const continueBtn = document.getElementById("continueBtn");
+  const saveStatus = document.getElementById("saveStatus");
+  const saveData = localStorage.getItem(SAVE_KEY);
+  if (saveData) {
+    const data = JSON.parse(saveData);
+    continueBtn.disabled = false;
+    saveStatus.textContent = `前回の記録: レベル ${data.level} / 第 ${data.index + 1}問目から再開 / スコア: ${data.score}`;
+  } else {
+    continueBtn.disabled = true;
+    saveStatus.textContent = "保存された記録はありません。";
+  }
+}
+
+// 問題ごとにリアルタイムに自動セーブする関数
+function saveProgress() {
+  const saveObj = {
+    score: score,
+    index: index,              // 次に開始する問題番号
+    level: level,
+    stageStart: stageStart,    // 現在のステージの先頭位置
+    correctCount: correctCount,
+    wrongCount: wrongCount,
+    stageCorrect: stageCorrect, // 現在ステージ内の正解数
+    stageScore: stageScore     // 現在ステージ内の獲得スコア
+  };
+  if(index < queue.length) {
+    localStorage.setItem(SAVE_KEY, JSON.stringify(saveObj));
+  }
+}
+
+// 起動時にセーブがあるか確認
+checkSaveData();
+
+// 「最初からはじめる」をクリック時
+document.getElementById("newGameBtn").onclick = () => {
+  resetGame();
+  localStorage.removeItem(SAVE_KEY);
+  document.getElementById("saveMenuArea").style.display = "none";
+  document.getElementById("speedSelectionArea").style.display = "block";
+};
+
+// 「続きからはじめる」をクリック時
+document.getElementById("continueBtn").onclick = () => {
+  const saveData = localStorage.getItem(SAVE_KEY);
+  if (saveData) {
+    const data = JSON.parse(saveData);
+    score = data.score;
+    index = data.index;
+    level = data.level;
+    stageStart = data.stageStart;
+    correctCount = data.correctCount;
+    wrongCount = data.wrongCount;
+    stageCorrect = data.stageCorrect || 0;
+    stageScore = data.stageScore || 0;
+    
+    scoreDiv.textContent = score;
+    document.getElementById("saveMenuArea").style.display = "none";
+    document.getElementById("speedSelectionArea").style.display = "block";
+  }
+};
+
+// ★速度選択ボタンの処理
+speedButtons.forEach(btn => {// それぞれの速度選択ボタンにクリックイベントを追加
+  btn.onclick = () => {// ボタンがクリックされたときの処理
+    baseSpeed = parseFloat(btn.dataset.speed);
+    speed = baseSpeed;
+    pointPerCorrect = parseInt(btn.dataset.point);
+    // ★画面切り替え
+    startScreen.style.display = "none";
+    gameScreen.style.display = "block";
+    
+    // ★ゲーム開始
+    spawn();
+    requestAnimationFrame(update);
+  };
+});
 
 
 function isTutorial(){
@@ -789,7 +872,7 @@ function spawn(){                   //敵を生成する関数
     fallSound.playbackRate = 3.2;
   }
   fallSound.currentTime = 0;
-  fallSound.play();
+  fallSound.play().catch(()=>{});
   if(isTutorial()){
     tutorialMessage.style.display = "block";
     tutorialMessage.textContent =
@@ -860,13 +943,11 @@ function showCandidates(k){
   });
 }
 
-// ===== Enterで発射 =====
-
 // ===== 発射 =====
 function fire(){                                  //発射する関数
   hideMessage();
   if(!soundStarted){
-    fallSound.play();
+    fallSound.play().catch(()=>{});
     fallSound.pause();
     soundStarted = true;
   }
@@ -878,13 +959,9 @@ function fire(){                                  //発射する関数
   s.className="shot";                             //弾のクラスを設定
   s.textContent=text;                             //弾のテキストを設定
 
-
-//  let sx=140, sy=340;                             //弾の初期位置を設定（ゲームエリアの下中央）
 // ===== 発射位置 =====
 let sx =  game.clientWidth/2 ;
-
 let sy =  game.clientHeight ;
-
 
 s.style.left=sx+"px";                           //弾の位置を更新
   s.style.top=sy+"px";                            //弾の位置を更新
@@ -907,7 +984,6 @@ function updateShots(){
     if(enemy){                    // ===== 敵がいるときだけ判定 =====
       const er = enemy.el.getBoundingClientRect();    //敵の位置とサイズを取得
       const sr = s.el.getBoundingClientRect();        //弾の位置とサイズを取得
-     
 
       // ===== 弾の中心 =====
       const cx =  sr.left + sr.width / 2;
@@ -948,12 +1024,16 @@ function handleShotHit(s){
     scoreDiv.textContent = score;
     fallSound.pause();
     explosionSound.currentTime = 0;
-    explosionSound.play();
+    explosionSound.play().catch(()=>{});
     explode(enemy);
     enemy.el.remove();
     enemy = null;
     index++;
     speed = baseSpeed;
+    
+    // ✨ 問題が正解に切り替わった瞬間に即時オートセーブ
+    saveProgress();
+
     // ===== 次問題 =====
     if(index < queue.length){
       setTimeout(() => {
@@ -1011,6 +1091,8 @@ function checkWallCollision(rect, areaRect){
 
 // ===== 敵逃走処理 =====
 function handleEnemyEscape(){
+  if(!enemy) return;
+
   fallSound.pause();
   wrongList.push({
     correct: enemy.ans[0],
@@ -1026,36 +1108,33 @@ function handleEnemyEscape(){
   x = 0;
   y = -40;
   dir = 1;
+
+  // ✨ 敵に逃げられて問題がスキップされた時も即時オートセーブ
+  saveProgress();
+
   // ===== 次問題 =====
   if(index < queue.length){
     setTimeout(() => {
       spawn();
     }, 500);
   }
-if(!enemy){
-  return;
-}
 }
 
 // ===== 敵更新 =====
 function updateEnemy(){
-
   // ===== 横移動 =====
   x += dir * speed;
   enemy.el.style.left = x + "px";
 
   // ===== 当たり判定用矩形 =====
   const rect = enemy.el.getBoundingClientRect();
-
-  const areaRect =
-    game.getBoundingClientRect();
+  const areaRect = game.getBoundingClientRect();
 
   // ===== 壁衝突 =====
   checkWallCollision(rect, areaRect);
   if(!enemy){
     return;
   }
-
 
   // ===== 位置更新 =====
   enemy.el.style.left = x + "px";
@@ -1110,7 +1189,6 @@ function restartGame(){
   gameScreen.style.display = "block";
   spawn();
   requestAnimationFrame(update);
-  
 }
 
 // ===== やり直しのボタン =====
@@ -1123,6 +1201,9 @@ document.getElementById("retryStageBtn").onclick = () => {
   }
   scoreDiv.textContent = score;
   resetStage();
+  
+  // やり直し時点の状態を保存
+  saveProgress();
   restartGame();
 };
 
@@ -1131,16 +1212,21 @@ document.getElementById("nextStageBtn").onclick = () => {
   stageStart += stageSize;
   if(stageStart >= queue.length){
     alert("全ステージクリア！");
+    localStorage.removeItem(SAVE_KEY);
     location.reload();
     return;
   }
   index = stageStart;
   resetStage();
+
+  // ステージ移動時点の状態を保存
+  saveProgress();
   restartGame();
 };
 
 // ===== もう一度遊ぶボタン =====
 document.getElementById("restartAllBtn").onclick = () => {
+  localStorage.removeItem(SAVE_KEY);
   location.reload();
 };
 
@@ -1197,7 +1283,8 @@ function endGame(){
       rank + "ランク";
     // 効果音
     levelUpSound.currentTime = 0;
-    levelUpSound.play();
+    levelUpSound.play().catch(()=>{});
+    localStorage.removeItem(SAVE_KEY);
 
   return;
 }
@@ -1206,8 +1293,6 @@ function endGame(){
   gameScreen.style.display = "none";// ゲーム画面を隠す
   endScreen.style.display = "flex";// エンドスクリーンを表示する
 
-  //document.getElementById("finalScore").textContent =
-  //  "得点：" + score;// ステージ得点を表示
     const nextBtn = document.getElementById("nextStageBtn");// 次のステージのボタン要素
     const retryBtn = document.getElementById("retryStageBtn");// やり直しのボタン要素
     nextBtn.style.display = "none";// 次のステージのボタンを隠す
@@ -1220,26 +1305,32 @@ function endGame(){
   
       scoreDiv.textContent = score;
       levelUpSound.currentTime = 0;
-      levelUpSound.play();
+      levelUpSound.play().catch(()=>{});
       level++;
       levelText.textContent =
         "レベル" + level + "になりました！";
       document.getElementById("accuracyComment").textContent =
         "全問正解！ ボーナス +5点";
       nextBtn.style.display = "inline-block";
+      
+      // レベルアップした確定データを保存
+      saveProgress();
     break;
 
     case 4:
   
     // ★レベルアップ音
       levelUpSound.currentTime = 0;   // レベルアップ音を最初から再生する
-      levelUpSound.play();            // レベルアップ音を再生する
+      levelUpSound.play().catch(()=>{});            // レベルアップ音を再生する
       level++;                        // レベルを上げる
       levelText.textContent =
         "レベル" + level + "になりました！";// レベルアップのテキストを表示
       document.getElementById("accuracyComment").textContent =
         "合格！ " + stageCorrect + "/5 正解";// 正解数を表示
       nextBtn.style.display = "inline-block";// 次のステージのボタンを表示
+      
+      // レベルアップした確定データを保存
+      saveProgress();
     break;
 
     case 3:
@@ -1268,7 +1359,8 @@ function endGame(){
 }
 
 // ===== 開始 =====
-update();
+// ここでの自動初期実行を待機させ、ボタン制御にするため、下のupdate()単体呼び出しをコメントアウト、または削除
+// update();
 
 });
 </script>
